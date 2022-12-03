@@ -10,6 +10,7 @@ import (
 	io "io/ioutil"
 	"bufio"
 	"strings"
+	"strconv"
 )
 var client http.Client
 func init() {
@@ -38,25 +39,46 @@ func main() {
         log.Fatalf("Error occured. Error is: %s", err.Error())
     }
     defer resp.Body.Close()
-	
+
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
 		bodyString := string(bodyBytes)
-		fmt.Print(countElves(bodyString))
+		fmt.Print(findMaxCapacity((capacityPerElf(bodyString))))
 	}
-	
 }
 
-func countElves(data string) int {
+func capacityPerElf(data string) map[int]int {
 	scanner := bufio.NewScanner(strings.NewReader(data))
-	elves := 0
+	m := make(map[int]int)
+	elf := 0
+	capacity := 0
 	for scanner.Scan() {
-    	if scanner.Text() == "" {
-			elves += 1
+		line := scanner.Text()
+    	if line == "" {
+			m[elf] = capacity
+			capacity = 0
+			elf += 1
+		} else {
+			value, err := strconv.Atoi(line)
+			if err != nil {
+				log.Fatal(err)
+			}
+			capacity += value
+			
 		}
 	}
-	return elves
+	return m
+}
+
+func findMaxCapacity(m map[int]int) int {
+	max := 0
+	for k := range m {
+		if m[k] > max {
+			max = m[k]
+		}
+	}
+	return max
 }
