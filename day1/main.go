@@ -11,6 +11,7 @@ import (
 	"bufio"
 	"strings"
 	"strconv"
+	"sort"
 )
 var client http.Client
 func init() {
@@ -46,10 +47,33 @@ func main() {
 			log.Fatal(err)
 		}
 		bodyString := string(bodyBytes)
-		fmt.Print(findMaxCapacity((capacityPerElf(bodyString))))
+		findMaxCapacity(capacityPerElf(bodyString))
+		findSumTopThree(listOfCapacity(bodyString))
 	}
 }
-
+func listOfCapacity(data string) []int {
+	scanner := bufio.NewScanner(strings.NewReader(data))
+	a := make([]int, 0)
+	elf := 0
+	capacity := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+    	if line == "" {
+			a = append(a, capacity)
+			capacity = 0
+			elf += 1
+		} else {
+			value, err := strconv.Atoi(line)
+			if err != nil {
+				log.Fatal(err)
+			}
+			capacity += value
+			
+		}
+	}
+	sort.Ints(a[:])
+	return a
+}
 func capacityPerElf(data string) map[int]int {
 	scanner := bufio.NewScanner(strings.NewReader(data))
 	m := make(map[int]int)
@@ -81,4 +105,13 @@ func findMaxCapacity(m map[int]int) int {
 		}
 	}
 	return max
+}
+
+func findSumTopThree(a []int) int {
+	sumTopThree := 0
+	for i := 1; i <= 3; i++ {
+		sumTopThree +=  a[len(a) - i]
+	}
+	fmt.Print(sumTopThree)
+	return sumTopThree
 }
